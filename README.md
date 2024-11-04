@@ -142,4 +142,3 @@ These are installed automatically if you follow the Installation steps above.
 License
 This project is licensed under the MIT License. See the LICENSE file for details.
 
-This Personal Expense Tracker CLI Application is a straightforward yet powerful tool for managing expenses, tracking budgets, and organizing financial data. It’s perfect for anyone looking to keep a closer eye on their spending in a simple, no-fuss environment. Enjoy tracking your habits!
