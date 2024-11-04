@@ -1,6 +1,6 @@
 # Phase3-project-gloria
 
-Personal Habit Tracker CLI Application
+ Habit Tracker CLI Application
 Welcome to the Personal Tracker CLI Application! This command-line tool is designed to help you effortlessly manage and track personal habits. Using a straightforward and user-friendly CLI, you can create, view, and categorize habits, and track your habits. Ideal for individuals, households, or small teams, this tool makes tracking easy and effective .
 
 # Table of Contents
