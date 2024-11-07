@@ -46,4 +46,5 @@ class User(Base):
 
     @classmethod
     def find_by_name(cls, session, name):
- 
+        # Correct method body
+        return session.query(cls).filter_by(name=name).first()
