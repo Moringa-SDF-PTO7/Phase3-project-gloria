@@ -1,28 +1,22 @@
 import click
+from app.models import User, Habit
 from database import SessionLocal
-from app.models import User, Category, Habit
-from app.utils import prompt_date, prompt_positive_float, prompt_non_empty_string
-from datetime import datetime
+from app.utils import prompt_non_empty_string, prompt_positive_float, prompt_date
 
-# ------------------- Database Session Management -------------------
 def get_session():
-    """Create and return a new session."""
     session = SessionLocal()
     return session
 
-# ------------------- User Management -------------------
+# User Management Menu
 def manage_users():
-    """
-    Menu for managing users: allows creating, deleting, displaying users, viewing user habits, or returning to the main menu.
-    """
     while True:
         click.echo("\n--- Manage Users ---")
         click.echo("1. Create User")
         click.echo("2. Delete User")
         click.echo("3. Display Users")
-        click.echo("4. View User Habits and Progress")
+        click.echo("4. Find User by Name")
         click.echo("5. Back to Main Menu")
-        
+
         choice = click.prompt("Select an option", type=int)
 
         if choice == 1:
@@ -32,32 +26,26 @@ def manage_users():
         elif choice == 3:
             display_users()
         elif choice == 4:
-            view_user_habits()
+            find_user_by_name()
         elif choice == 5:
             break
         else:
             click.echo("Invalid choice. Please select a valid option.")
 
 def create_user():
-    """
-    Handles the creation of a new user.
-    """
     name = prompt_non_empty_string("Enter user name")
-    session = get_session()  # Start a new session
+    session = get_session()
     try:
         user = User.create(session, name=name)
         click.echo(f"User created: {user}")
     except Exception as e:
         click.echo(f"Error creating user: {e}")
     finally:
-        session.close()  # Ensure session is closed after operation
+        session.close()
 
 def delete_user():
-    """
-    Handles the deletion of an existing user.
-    """
     user_id = click.prompt("Enter user ID to delete", type=int)
-    session = get_session()  # Start a new session
+    session = get_session()
     success = User.delete(session, user_id)
     if success:
         click.echo("User deleted successfully.")
@@ -66,144 +54,105 @@ def delete_user():
     session.close()
 
 def display_users():
-    """
-    Displays all users currently stored in the database.
-    """
     session = get_session()
     users = User.get_all(session)
     if not users:
         click.echo("No users found.")
-        session.close()
-        return
-    click.echo("Users:")
-    for user in users:
-        click.echo(f"ID: {user.id} | Name: {user.name}")
-    session.close()
-
-def view_user_habits():
-    """
-    Displays all habits for a specified user, along with their progress.
-    """
-    user_id = click.prompt("Enter user ID to view their habits", type=int)
-    session = get_session()
-    user = User.find_by_id(session, user_id)
-
-    if not user:
-        click.echo("User not found.")
-        session.close()
-        return
-
-    habits = user.habits
-    if not habits:
-        click.echo(f"No habits found for user: {user.name}")
     else:
-        click.echo(f"Habits for User '{user.name}':")
-        for habit in habits:
-            click.echo(f"ID: {habit.id} | Name: {habit.name} | Frequency: {habit.frequency} | Progress: {habit.progress}")
-
+        click.echo("Users:")
+        for user in users:
+            click.echo(f"ID: {user.id} | Name: {user.name}")
     session.close()
 
-# ------------------- Category Management -------------------
-def manage_categories():
-    """
-    Menu for managing categories: allows creating, deleting, displaying categories, 
-    viewing category details, or returning to the main menu.
-    """
+def find_user_by_name():
+    name = click.prompt("Enter user name to search")
+    session = get_session()
+    user = User.find_by_name(session, name)
+    if user:
+        click.echo(f"Found User: ID: {user.id} | Name: {user.name}")
+    else:
+        click.echo("User not found.")
+    session.close()
+
+# Habit Management Menu
+def manage_habits():
     while True:
-        click.echo("\n--- Manage Categories ---")
-        click.echo("1. Create Category")
-        click.echo("2. Delete Category")
-        click.echo("3. Display Categories")
-        click.echo("4. Find Category")
-        click.echo("5. View Category Habits")
-        click.echo("6. Back to Main Menu")
-        
+        click.echo("\n--- Manage Habits ---")
+        click.echo("1. Create Habit")
+        click.echo("2. Delete Habit")
+        click.echo("3. Display Habits")
+        click.echo("4. Back to Main Menu")
+
         choice = click.prompt("Select an option", type=int)
 
         if choice == 1:
-            create_category()
+            create_habit()
         elif choice == 2:
-            delete_category()
+            delete_habit()
         elif choice == 3:
-            display_categories()
+            display_habits()
         elif choice == 4:
-            find_category()
-        elif choice == 5:
-            view_category_habits()
-        elif choice == 6:
             break
         else:
             click.echo("Invalid choice. Please select a valid option.")
 
-def create_category():
-    """
-    Handles the creation of a new category.
-    """
-    name = prompt_non_empty_string("Enter category name")
+def create_habit():
+    name = prompt_non_empty_string("Enter habit name")
+    frequency = prompt_positive_float("Enter habit frequency (days per week)")
+    user_id = click.prompt("Enter user ID to assign this habit to", type=int)
     session = get_session()
     try:
-        category = Category.create(session, name=name)
-        click.echo(f"Category created: {category}")
+        habit = Habit.create(session, name=name, frequency=frequency, user_id=user_id)
+        click.echo(f"Habit created: {habit}")
     except Exception as e:
-        click.echo(f"Error creating category: {e}")
+        click.echo(f"Error creating habit: {e}")
     finally:
         session.close()
 
-def delete_category():
-    """
-    Handles the deletion of an existing category.
-    """
-    category_id = click.prompt("Enter category ID to delete", type=int)
+def delete_habit():
+    habit_id = click.prompt("Enter habit ID to delete", type=int)
     session = get_session()
-    success = Category.delete(session, category_id)
+    success = Habit.delete(session, habit_id)
     if success:
-        click.echo("Category deleted successfully.")
+        click.echo("Habit deleted successfully.")
     else:
-        click.echo("Category not found.")
+        click.echo("Habit not found.")
     session.close()
 
-def display_categories():
-    """
-    Displays all categories currently stored in the database.
-    """
+def display_habits():
     session = get_session()
-    categories = Category.get_all(session)
-    if not categories:
-        click.echo("No categories found.")
-        session.close()
-        return
-    click.echo("Categories:")
-    for cat in categories:
-        click.echo(f"ID: {cat.id} | Name: {cat.name}")
+    habits = Habit.get_all(session)
+    if not habits:
+        click.echo("No habits found.")
+    else:
+        click.echo("Habits:")
+        for habit in habits:
+            click.echo(f"ID: {habit.id} | Name: {habit.name} | Frequency: {habit.frequency} | Progress: {habit.progress}")
     session.close()
 
-def find_category():
-    """
-    Finds a category by its ID or name.
-    """
-    find_id = click.prompt("Enter category ID to search (or press Enter to skip)", default='', show_default=False)
-    name = click.prompt("Enter category name to search (or press Enter to skip)", default='', show_default=False)
+# Main CLI Menu
+@click.group()
+def cli():
+    pass
 
-    session = get_session()
+@cli.command()
+def start():
+    while True:
+        click.echo("\n--- Main Menu ---")
+        click.echo("1. Manage Users")
+        click.echo("2. Manage Habits")
+        click.echo("3. Exit")
+        
+        choice = click.prompt("Select an option", type=int)
 
-    if find_id:
-        category = Category.find_by_id(session, int(find_id))
-    elif name:
-        category = Category.find_by_name(session, name)
-    else:
-        click.echo("Please provide either ID or name to search.")
-        session.close()
-        return
+        if choice == 1:
+            manage_users()
+        elif choice == 2:
+            manage_habits()
+        elif choice == 3:
+            break
+        else:
+            click.echo("Invalid choice. Please select a valid option.")
 
-    if category:
-        click.echo(f"Found Category: ID: {category.id} | Name: {category.name}")
-    else:
-        click.echo("Category not found.")
-
-    session.close()
-
-def view_category_habits():
-    """
-    Displays all habits associated with a specific category.
-    """
-    
+if __name__ == "__main__":
+    cli()
